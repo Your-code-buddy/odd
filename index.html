@@ -9,78 +9,226 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
-    body {font-family: Arial, sans-serif; margin:0; padding:0; background:#f5f5f5;}
-    .container {max-width:900px; margin:20px auto; padding:20px; background:#fff; box-shadow:0 0 10px rgba(0,0,0,.1);}
-    h1 {text-align:center; margin-bottom:20px;}
-    .slide {border:2px solid #ddd; padding:20px; margin-bottom:20px; position:relative; page-break-inside:avoid;}
-    .slide-header {display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;}
-    .remove-slide {background:#e74c3c; color:#fff; border:none; padding:5px 10px; cursor:pointer;}
-    .form-group {margin-bottom:12px;}
-    label {display:inline-block; width:140px; font-weight:bold;}
-    input[type=text], input[type=number], input[type=date] {
-      width:calc(100% - 150px); padding:6px; border:1px solid #ccc; border-radius:4px;
+    /* ------------------ Base ------------------ */
+    body {
+      font-family: "Poppins", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #dbeafe, #bfdbfe, #93c5fd);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
     }
+
+    .container {
+      width: 95%;
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 25px;
+      background: #ffffffd9;
+      backdrop-filter: blur(6px);
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      animation: fadeIn 0.6s ease;
+    }
+
+    h1 {
+      text-align: center;
+      color: #1e3a8a;
+      margin-bottom: 20px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    /* ------------------ Slides ------------------ */
+    .slide {
+      border: 1px solid #cbd5e1;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 14px;
+      background: #f8fafc;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .slide:hover {
+      transform: scale(1.01);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      color: #1e3a8a;
+      font-weight: 600;
+    }
+
+    .remove-slide {
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .remove-slide:hover {
+      background: #dc2626;
+    }
+
+    /* ------------------ Form ------------------ */
+    .form-group {
+      margin-bottom: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    label {
+      width: 130px;
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 14px;
+    }
+
+    input[type=text],
+    input[type=number],
+    input[type=date] {
+      flex: 1;
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+    }
+
+    /* ------------------ Buttons ------------------ */
+    .controls {
+      text-align: center;
+      margin-top: 25px;
+    }
+
     .btn {
-      padding:10px 20px; margin:5px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;
+      padding: 12px 22px;
+      margin: 6px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .add-btn {background:#27ae60; color:#fff;}
-    .pdf-btn {background:#3498db; color:#fff;}
-    .controls {text-align:center; margin-top:20px;}
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .add-btn {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .pdf-btn {
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+    }
+
+    /* ------------------ Toast ------------------ */
+    .toast {
+      visibility: hidden;
+      min-width: 220px;
+      background-color: #1e3a8a;
+      color: #fff;
+      text-align: center;
+      border-radius: 10px;
+      padding: 14px 20px;
+      position: fixed;
+      z-index: 9999;
+      left: 50%;
+      bottom: 35px;
+      transform: translateX(-50%);
+      font-weight: 600;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+      transition: visibility 0s, opacity 0.4s ease;
+      opacity: 0;
+    }
+
+    .toast.show {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>PDF Slides – Form</h1>
+  <h1>PDF Slides Form</h1>
 
-  <div id="slides-container">
-    <!-- Slides will be created dynamically -->
-  </div>
+  <div id="slides-container"></div>
 
   <div class="controls">
-    <button class="btn add-btn" id="add-slide">+ New Slide</button>
+    <button class="btn add-btn" id="add-slide">+ Add New Slide</button>
     <button class="btn pdf-btn" id="generate-pdf">Generate PDF</button>
   </div>
 </div>
+
+<div id="toast" class="toast">✅ PDF saved successfully!</div>
 
 <script>
   const { jsPDF } = window.jspdf;
   const slidesContainer = document.getElementById('slides-container');
   const addBtn = document.getElementById('add-slide');
   const pdfBtn = document.getElementById('generate-pdf');
+  const toast = document.getElementById('toast');
+
+  function showToast() {
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
 
   function createSlide() {
     const slide = document.createElement('div');
     slide.className = 'slide';
-
     slide.innerHTML = `
       <div class="slide-header">
         <strong>Slide ${slidesContainer.children.length + 1}</strong>
         <button class="remove-slide" type="button">× Remove</button>
       </div>
-
       <div class="form-group">
         <label>Party name</label>
         <input type="text" class="party-name" placeholder="Enter party name">
       </div>
-
       <div class="form-group">
         <label>Material name</label>
-        <input type="text" class="material-name" placeholder="Enter material">
+        <input type="text" class="material-name" placeholder="Enter material name">
       </div>
-
       <div class="form-group">
         <label>Payment</label>
         <input type="number" step="0.01" class="payment" placeholder="0.00">
       </div>
-
       <div class="form-group">
         <label>Date</label>
         <input type="date" class="date">
       </div>
     `;
 
-    // Remove button
     slide.querySelector('.remove-slide').addEventListener('click', () => {
       if (slidesContainer.children.length > 1) {
         slide.remove();
@@ -91,25 +239,20 @@
       }
     });
 
-    // Add input listeners for auto-save on change
     const inputs = slide.querySelectorAll('input');
-    inputs.forEach(input => {
-      input.addEventListener('input', saveSlides);
-    });
+    inputs.forEach(input => input.addEventListener('input', saveSlides));
 
     slidesContainer.appendChild(slide);
     renumberSlides();
-    saveSlides(); // Save after adding new slide
+    saveSlides();
   }
 
-  // Renumber all slides after add/remove
   function renumberSlides() {
     Array.from(slidesContainer.children).forEach((s, i) => {
       s.querySelector('.slide-header strong').textContent = `Slide ${i + 1}`;
     });
   }
 
-  // Save slides data to localStorage
   function saveSlides() {
     const slidesData = Array.from(slidesContainer.children).map(slide => ({
       party_name: slide.querySelector('.party-name').value,
@@ -120,7 +263,6 @@
     localStorage.setItem('slidesData', JSON.stringify(slidesData));
   }
 
-  // Load slides from localStorage
   function loadSlides() {
     const savedData = localStorage.getItem('slidesData');
     if (savedData) {
@@ -137,51 +279,36 @@
         return;
       }
     }
-    // If no saved data or empty, create first slide
     createSlide();
   }
 
-  // ------------------------------------------------------------------
-  // PDF generation
-  // ------------------------------------------------------------------
   async function generatePDF() {
-    const pdf = new jsPDF({
-      orientation: 'p',
-      unit: 'mm',
-      format: 'a4'
-    });
-
+    const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
     const margin = 10;
 
     for (let i = 0; i < slidesContainer.children.length; i++) {
       const slide = slidesContainer.children[i];
-
-      // Capture the slide as an image
-      const canvas = await html2canvas(slide, {scale: 2});
+      const canvas = await html2canvas(slide, { scale: 2 });
       const imgData = canvas.toDataURL('image/png');
-
       const imgProps = pdf.getImageProperties(imgData);
       const imgWidth = pageWidth - 2 * margin;
       const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-
-      // Add new page if needed (except first slide)
       if (i > 0) pdf.addPage();
-
       pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
     }
 
-    pdf.save('slides-form.pdf');
+    // Unique filename (no overwrite)
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[:.]/g, '-');
+    const folderName = 'SlidesPDFs';
+    const fileName = `${folderName}/slides-${timestamp}.pdf`;
+    pdf.save(fileName);
+    showToast();
   }
 
-  // ------------------------------------------------------------------
-  // Event listeners
-  // ------------------------------------------------------------------
   addBtn.addEventListener('click', createSlide);
   pdfBtn.addEventListener('click', generatePDF);
-
-  // Load slides on page load
   loadSlides();
 </script>
 
