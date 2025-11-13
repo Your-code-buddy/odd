@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PDF Slides with Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- jsPDF + html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    body {font-family: Arial, sans-serif; margin:0; padding:0; background:#f5f5f5;}
+    .container {max-width:900px; margin:20px auto; padding:20px; background:#fff; box-shadow:0 0 10px rgba(0,0,0,.1);}
+    h1 {text-align:center; margin-bottom:20px;}
+    .slide {border:2px solid #ddd; padding:20px; margin-bottom:20px; position:relative; page-break-inside:avoid;}
+    .slide-header {display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;}
+    .remove-slide {background:#e74c3c; color:#fff; border:none; padding:5px 10px; cursor:pointer;}
+    .form-group {margin-bottom:12px;}
+    label {display:inline-block; width:140px; font-weight:bold;}
+    input[type=text], input[type=number], input[type=date] {
+      width:calc(100% - 150px); padding:6px; border:1px solid #ccc; border-radius:4px;
+    }
+    .btn {
+      padding:10px 20px; margin:5px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;
+    }
+    .add-btn {background:#27ae60; color:#fff;}
+    .pdf-btn {background:#3498db; color:#fff;}
+    .controls {text-align:center; margin-top:20px;}
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>PDF Slides – Form</h1>
+
+  <div id="slides-container">
+    <!-- Slides will be created dynamically -->
+  </div>
+
+  <div class="controls">
+    <button class="btn add-btn" id="add-slide">+ New Slide</button>
+    <button class="btn pdf-btn" id="generate-pdf">Generate PDF</button>
+  </div>
+</div>
+
+<script>
+  const { jsPDF } = window.jspdf;
+  const slidesContainer = document.getElementById('slides-container');
+  const addBtn = document.getElementById('add-slide');
+  const pdfBtn = document.getElementById('generate-pdf');
+
+  function createSlide() {
+    const slide = document.createElement('div');
+    slide.className = 'slide';
+
+    slide.innerHTML = `
+      <div class="slide-header">
+        <strong>Slide ${slidesContainer.children.length + 1}</strong>
+        <button class="remove-slide" type="button">× Remove</button>
+      </div>
+
+      <div class="form-group">
+        <label>Party name</label>
+        <input type="text" class="party-name" placeholder="Enter party name">
+      </div>
+
+      <div class="form-group">
+        <label>Material name</label>
+        <input type="text" class="material-name" placeholder="Enter material">
+      </div>
+
+      <div class="form-group">
+        <label>Payment</label>
+        <input type="number" step="0.01" class="payment" placeholder="0.00">
+      </div>
+
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" class="date">
+      </div>
+    `;
+
+    // Remove button
+    slide.querySelector('.remove-slide').addEventListener('click', () => {
+      if (slidesContainer.children.length > 1) {
+        slide.remove();
+        renumberSlides();
+        saveSlides();
+      } else {
+        alert('At least one slide must remain.');
+      }
+    });
+
+    // Add input listeners for auto-save on change
+    const inputs = slide.querySelectorAll('input');
+    inputs.forEach(input => {
+      input.addEventListener('input', saveSlides);
+    });
+
+    slidesContainer.appendChild(slide);
+    renumberSlides();
+    saveSlides(); // Save after adding new slide
+  }
+
+  // Renumber all slides after add/remove
+  function renumberSlides() {
+    Array.from(slidesContainer.children).forEach((s, i) => {
+      s.querySelector('.slide-header strong').textContent = `Slide ${i + 1}`;
+    });
+  }
+
+  // Save slides data to localStorage
+  function saveSlides() {
+    const slidesData = Array.from(slidesContainer.children).map(slide => ({
+      party_name: slide.querySelector('.party-name').value,
+      material_name: slide.querySelector('.material-name').value,
+      payment: slide.querySelector('.payment').value,
+      date: slide.querySelector('.date').value,
+    }));
+    localStorage.setItem('slidesData', JSON.stringify(slidesData));
+  }
+
+  // Load slides from localStorage
+  function loadSlides() {
+    const savedData = localStorage.getItem('slidesData');
+    if (savedData) {
+      const slidesData = JSON.parse(savedData);
+      if (slidesData.length > 0) {
+        slidesData.forEach(data => {
+          createSlide();
+          const slide = slidesContainer.lastChild;
+          slide.querySelector('.party-name').value = data.party_name || '';
+          slide.querySelector('.material-name').value = data.material_name || '';
+          slide.querySelector('.payment').value = data.payment || '';
+          slide.querySelector('.date').value = data.date || '';
+        });
+        return;
+      }
+    }
+    // If no saved data or empty, create first slide
+    createSlide();
+  }
+
+  // ------------------------------------------------------------------
+  // PDF generation
+  // ------------------------------------------------------------------
+  async function generatePDF() {
+    const pdf = new jsPDF({
+      orientation: 'p',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 10;
+
+    for (let i = 0; i < slidesContainer.children.length; i++) {
+      const slide = slidesContainer.children[i];
+
+      // Capture the slide as an image
+      const canvas = await html2canvas(slide, {scale: 2});
+      const imgData = canvas.toDataURL('image/png');
+
+      const imgProps = pdf.getImageProperties(imgData);
+      const imgWidth = pageWidth - 2 * margin;
+      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+      // Add new page if needed (except first slide)
+      if (i > 0) pdf.addPage();
+
+      pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+    }
+
+    pdf.save('slides-form.pdf');
+  }
+
+  // ------------------------------------------------------------------
+  // Event listeners
+  // ------------------------------------------------------------------
+  addBtn.addEventListener('click', createSlide);
+  pdfBtn.addEventListener('click', generatePDF);
+
+  // Load slides on page load
+  loadSlides();
+</script>
+
+</body>
+</html>
